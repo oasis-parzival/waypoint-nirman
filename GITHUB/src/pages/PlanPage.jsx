@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const PlanPage = () => {
+  const locationState = useLocation();
   const [formData, setFormData] = useState({
     trekName: '',
     date: '',
@@ -9,6 +11,25 @@ const PlanPage = () => {
     duration: '',
     notes: ''
   });
+
+  useEffect(() => {
+    if (locationState.state) {
+      const { trekName, location, difficulty, duration } = locationState.state;
+      
+      // Normalize difficulty to our standard tiers
+      let mappedExperience = 'Intermediate';
+      if (difficulty?.toLowerCase().includes('easy')) mappedExperience = 'Beginner';
+      if (difficulty?.toLowerCase().includes('hard') || difficulty?.toLowerCase().includes('difficult')) mappedExperience = 'Advanced';
+
+      setFormData(prev => ({
+        ...prev,
+        trekName: trekName || prev.trekName,
+        notes: location ? `Location context: ${location}` : prev.notes,
+        experience: mappedExperience,
+        duration: duration || prev.duration
+      }));
+    }
+  }, [locationState]);
 
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);

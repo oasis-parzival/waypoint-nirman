@@ -1,13 +1,120 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+const wikiImageCache = new Map();
+
+const manualImageOverrides = new Map([
+  ['hampta pass', 'https://banzaras.in/wp-content/uploads/2025/06/WhatsApp-Image-2025-06-24-at-13.38.04.jpeg'],
+  ['ambolgad fort', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeWLCwoO1Y5r7hLqU2oSb2L9SE85BO44bl_w&s'],
+  ['asava fort', 'https://d3sftlgbtusmnv.cloudfront.net/blog/wp-content/uploads/2024/10/Asava-Fort-Cover-Photo-840x425.jpg'],
+  ['ballarpur fort', 'https://redearth.in/blog/wp-content/uploads/2022/03/Ballarpur-Fort-Pallavi-Jayaraman-1-1024x635.jpg'],
+  ['bhamer', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgfxaB8GeJfJARxZm5YFlleHYj8EVJYSTX2w&s'],
+  ['nag tibba', 'https://imgcld.yatra.com/ytimages/image/upload/v1517481327/AdvNation/ANN_TRP171/BloomingRhododendronForest_1432206825_NQvgOC.jpg'],
+  ['beas kund', 'https://himtrek.co.in/wp-content/uploads/2025/07/Premium-Beas-Kund-Trek.webp'],
+  ['deo tibba base camp', 'https://brozaadventures.com/soft/file_store/detaild_itenary/1952889226CJ.jpg'],
+  ['brahmatal', 'https://storage.googleapis.com/stateless-www-justwravel-com/2019/06/Brahmataal-JustWravel-4-1024x682.jpg'],
+  ['buran ghati', 'https://i.ytimg.com/vi/6ZmQQAsBTrY/maxresdefault.jpg'],
+  ['green lake trek', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrve4i3W1JdO8GfVUrh6OVNnWvxjtQRoQnTg&s'],
+  ['phalut trek', 'https://cdn.prod.website-files.com/66e19a4069802b9bae69e911/6710e16c5b15ece70c1101aa_trek-blog-7.jpg'],
+  ['talley valley trek', 'https://www.bikatadventures.com/images/Expeditions/IMG980x500/img-talle-valley-trek-arunachal-pradesh-Bikat-Adventures.png']
+]);
+
+const normalizeTitle = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+
+const getFallbackImageUrl = (trek, { width = 800, height = 600 } = {}) => {
+  const regionKeywords = (() => {
+    switch (trek?.region) {
+      case 'Sahyadri': return ['Maharashtra', 'fort'];
+      case 'North East': return ['Northeast India', 'mountains', 'trek'];
+      default: return ['Himalayas', 'mountains', 'trek'];
+    }
+  })();
+  const parts = [trek?.Trek_Name, trek?.District, ...regionKeywords, 'landscape']
+    .filter(Boolean).map(s => String(s).trim()).filter(Boolean);
+  const query = encodeURIComponent(parts.join(','));
+  return `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=${width}`;
+};
+
+const buildWikiTitleCandidates = (trek) => {
+  const trekName = normalizeTitle(trek?.Trek_Name);
+  const district = normalizeTitle(trek?.District);
+  if (!trekName) return [];
+  const candidates = [trekName];
+  if (district) {
+    candidates.push(`${trekName}, ${district}`);
+    candidates.push(`${trekName} (${district})`);
+  }
+  if (trek?.region === 'Sahyadri') {
+    if (!/\bfort\b/i.test(trekName)) candidates.push(`${trekName} Fort`);
+    candidates.push(`${trekName} (fort)`);
+  }
+  return Array.from(new Set(candidates));
+};
+
+const fetchWikiImageUrl = async (title, signal) => {
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+  const response = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data?.originalimage?.source || data?.thumbnail?.source || null;
+};
+
+const fetchWikiSearchTopTitle = async (search, signal) => {
+  const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srlimit=1&format=json&origin=*&srsearch=${encodeURIComponent(search)}`;
+  const response = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data?.query?.search?.[0]?.title || null;
+};
+
+const resolveTrekImageUrl = async (trek, signal) => {
+  const candidates = buildWikiTitleCandidates(trek);
+  for (const title of candidates) {
+    const img = await fetchWikiImageUrl(title, signal);
+    if (img) return img;
+  }
+  const searchQuery = [normalizeTitle(trek?.Trek_Name), normalizeTitle(trek?.District), trek?.region === 'Sahyadri' ? 'fort' : 'trek', 'India'].filter(Boolean).join(' ');
+  const bestTitle = await fetchWikiSearchTopTitle(searchQuery, signal);
+  if (bestTitle) {
+    const img = await fetchWikiImageUrl(bestTitle, signal);
+    if (img) return img;
+  }
+  return null;
+};
 
 const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState('');
   const [isAsking, setIsAsking] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [imageSrc, setImageSrc] = useState(() => getFallbackImageUrl(trek));
 
   const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
   const GROQ_MODEL = 'llama-3.1-8b-instant';
+
+  useEffect(() => {
+    const cacheKey = normalizeTitle(trek.Trek_Name).toLowerCase();
+    const manualOverride = manualImageOverrides.get(cacheKey);
+
+    if (manualOverride) {
+      setImageSrc(manualOverride);
+      return;
+    }
+
+    if (wikiImageCache.has(cacheKey)) {
+      setImageSrc(wikiImageCache.get(cacheKey));
+      return;
+    }
+
+    const controller = new AbortController();
+    resolveTrekImageUrl(trek, controller.signal).then(url => {
+      if (url) {
+        wikiImageCache.set(cacheKey, url);
+        setImageSrc(url);
+      }
+    });
+
+    return () => controller.abort();
+  }, [trek.Trek_Name]);
 
   const askIntelligence = async (e) => {
     e.preventDefault();
@@ -78,11 +185,11 @@ const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
     >
       <div className="relative aspect-[16/10] overflow-hidden">
         <img 
-          src={imageUrl}
+          src={imageSrc}
           onError={(e) => {
-            e.target.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800";
+            e.target.src = `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800`;
           }}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-60 group-hover:opacity-100" 
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-90 group-hover:opacity-100" 
           alt={trek.Trek_Name} 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
