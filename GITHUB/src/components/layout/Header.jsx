@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 
-const Header = () => {
+const Header = ({ user, onLoginClick }) => {
   const location = useLocation();
   
   const navLinks = [
@@ -9,6 +10,10 @@ const Header = () => {
     { name: 'Plan', path: '/plan' },
     { name: 'Dashboard', path: '/dashboard' },
   ];
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <header className="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-[60] w-[94%] md:w-max">
@@ -32,9 +37,25 @@ const Header = () => {
             </Link>
           ))}
         </nav>
-        <button className="bg-white text-black px-5 md:px-8 py-2 md:py-2.5 rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl font-label">
-          Login
-        </button>
+        
+        {user ? (
+          <div className="flex items-center gap-4">
+            <span className="hidden md:block text-[9px] font-bold text-white/30 truncate max-w-[100px] uppercase tracking-widest">{user.email.split('@')[0]}</span>
+            <button 
+              onClick={handleSignOut}
+              className="bg-white/5 border border-white/10 text-white px-5 md:px-8 py-2 md:py-2.5 rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-white hover:text-black transition-all font-label"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={onLoginClick}
+            className="bg-white text-black px-5 md:px-8 py-2 md:py-2.5 rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl font-label"
+          >
+            Login
+          </button>
+        )}
       </div>
     </header>
   );

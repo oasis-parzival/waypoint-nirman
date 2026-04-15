@@ -6,7 +6,7 @@ const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
   const [isAsking, setIsAsking] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
 
-  const GROQ_API_KEY = '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';
+  const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
   const GROQ_MODEL = 'llama-3.1-8b-instant';
 
   const askIntelligence = async (e) => {
@@ -56,7 +56,20 @@ const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
     }
   };
 
-  const imageUrl = `https://source.unsplash.com/featured/800x600?maharashtra,india,trek,${trek.Trek_Name.split(' ')[0]}`;
+  // High-fidelity trek & mountain images from Unsplash
+  const trekImages = [
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
+    "https://images.unsplash.com/photo-1472396961693-142e6e269027",
+    "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
+    "https://images.unsplash.com/photo-1626621427131-cc2d8549927d",
+    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    "https://images.unsplash.com/photo-1511497584788-876760111969",
+    "https://images.unsplash.com/photo-1433086561291-728f4b6a9391"
+  ];
+
+  const seed = trek.Trek_Name?.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) || 0;
+  const imageUrl = `${trekImages[seed % trekImages.length]}?auto=format&fit=crop&q=80&w=800`;
 
   return (
     <div 
@@ -67,7 +80,7 @@ const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
         <img 
           src={imageUrl}
           onError={(e) => {
-            e.target.src = `https://images.unsplash.com/photo-1620662512398-94537122e196?auto=format&fit=crop&q=80&w=800`;
+            e.target.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800";
           }}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-60 group-hover:opacity-100" 
           alt={trek.Trek_Name} 

@@ -161,16 +161,36 @@ const DiscoverPage = () => {
            ></div>
            
            <div className="relative w-full max-w-4xl h-[92vh] md:h-auto md:max-h-[90vh] bg-surface-container-low border-t md:border border-white/10 rounded-t-[3rem] md:rounded-[3rem] shadow-[0_-20px_100px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-500 md:zoom-in">
-              {/* Modal Image Header */}
-              <div className="relative h-48 md:h-96 w-full flex-shrink-0">
-                 <img 
-                   src={`https://source.unsplash.com/featured/1200x800?maharashtra,fort,${selectedTrek.Trek_Name.split(' ')[0]}`}
-                   className="w-full h-full object-cover"
-                   alt={selectedTrek.Trek_Name}
-                   onError={(e) => {
-                     e.target.src = "https://images.unsplash.com/photo-1620662512398-94537122e196?auto=format&fit=crop&q=80&w=1200";
-                   }}
-                 />
+               {/* Modal Image Header */}
+               <div className="relative h-48 md:h-96 w-full flex-shrink-0">
+                  {(() => {
+                    const maharashtraPhotoIds = [
+                      '1626621427131-cc2d8549927d',
+                      '1620662512398-94537122e196',
+                      '1596422846543-75c6fc197f07',
+                      '1589782182703-2aad69c6a23d',
+                      '1510253687831-0f581a8ad5f5',
+                      '1599427303058-f1737e415fb2',
+                      '1605649495447-fd4e34e9e04f',
+                      '1603566162896-bc44a821e285',
+                      '1621252391054-06f1523450e1',
+                      '1609137144813-94c6799059f3'
+                    ];
+                    const seed = selectedTrek.Trek_Name?.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) || 0;
+                    const photoId = maharashtraPhotoIds[seed % maharashtraPhotoIds.length];
+                    const imageUrl = `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&q=80&w=1200`;
+
+                    return (
+                      <img 
+                        src={imageUrl}
+                        className="w-full h-full object-cover"
+                        alt={selectedTrek.Trek_Name}
+                        onError={(e) => {
+                          e.target.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1200";
+                        }}
+                      />
+                    );
+                  })()}
                  <div className="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent"></div>
                  <button 
                    onClick={() => setSelectedTrek(null)}

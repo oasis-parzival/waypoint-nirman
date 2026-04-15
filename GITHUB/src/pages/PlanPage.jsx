@@ -14,7 +14,7 @@ const PlanPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const GROQ_API_KEY = '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';
+  const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
   const GROQ_MODEL = 'llama-3.1-8b-instant';
 
   const handleInputChange = (e) => {
