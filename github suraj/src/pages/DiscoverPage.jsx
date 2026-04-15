@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import TrekIntelligenceCard from '../components/discovery/TrekIntelligenceCard';
 
 const wikiImageCache = new Map();
@@ -117,6 +117,8 @@ const DiscoverPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTrek, setSelectedTrek] = useState(null);
   const [selectedTrekImageSrc, setSelectedTrekImageSrc] = useState(null);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
   useEffect(() => {
     const loadAllTreks = async () => {
@@ -198,6 +200,37 @@ const DiscoverPage = () => {
     return matchesSearch && matchesRegion;
   });
 
+  const searchSuggestions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+
+    const names = allTreks
+      .filter((t) => activeRegion === 'All' || t.region === activeRegion)
+      .map((t) => t.Trek_Name)
+      .filter(Boolean);
+
+    const unique = Array.from(new Set(names));
+
+    return unique
+      .filter((name) => {
+        const n = String(name).toLowerCase();
+        if (n.startsWith(q)) return true;
+        return n.split(/\s+/).some((w) => w.startsWith(q));
+      })
+      .sort((a, b) => String(a).localeCompare(String(b)))
+      .slice(0, 8);
+  }, [allTreks, activeRegion, searchQuery]);
+
+  useEffect(() => {
+    setActiveSuggestionIndex(searchSuggestions.length ? 0 : -1);
+  }, [searchSuggestions]);
+
+  const applySuggestion = (name) => {
+    setSearchQuery(name);
+    setIsSearchFocused(false);
+    setActiveSuggestionIndex(-1);
+  };
+
   const regions = ['All', 'Sahyadri', 'North India', 'North East'];
 
   return (
@@ -224,14 +257,65 @@ const DiscoverPage = () => {
           
           <div className="flex flex-col gap-8">
             <div className="flex flex-col md:flex-row gap-4 max-w-3xl">
-              <div className="flex-grow flex items-center gap-4 px-6 py-5 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-3xl focus-within:border-primary/40 transition-all">
-                <span className="material-symbols-outlined text-white/20">search</span>
-                <input 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-white w-full placeholder:text-white/10 font-body text-sm" 
-                  placeholder="Global query: Trek name, district, or difficulty..." 
-                />
+              <div className="w-full space-y-2">
+                <div className="flex-grow flex items-center gap-4 px-6 py-5 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-3xl focus-within:border-primary/40 transition-all">
+                  <span className="material-symbols-outlined text-white/20">search</span>
+                  <input 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 120)}
+                    onKeyDown={(e) => {
+                      if (!isSearchFocused || searchSuggestions.length === 0) return;
+
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setActiveSuggestionIndex((i) => Math.min(i + 1, searchSuggestions.length - 1));
+                        return;
+                      }
+
+                      if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setActiveSuggestionIndex((i) => Math.max(i - 1, 0));
+                        return;
+                      }
+
+                      if (e.key === 'Enter') {
+                        if (activeSuggestionIndex >= 0 && activeSuggestionIndex < searchSuggestions.length) {
+                          e.preventDefault();
+                          applySuggestion(searchSuggestions[activeSuggestionIndex]);
+                        }
+                        return;
+                      }
+
+                      if (e.key === 'Escape') {
+                        e.preventDefault();
+                        setIsSearchFocused(false);
+                        return;
+                      }
+                    }}
+                    className="bg-transparent border-none outline-none text-white w-full placeholder:text-white/10 font-body text-sm" 
+                    placeholder="Global query: Trek name, district, or difficulty..." 
+                  />
+                </div>
+                {isSearchFocused && searchSuggestions.length > 0 && (
+                  <div className="bg-black/80 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.8)]">
+                    {searchSuggestions.map((name, idx) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applySuggestion(name)}
+                        onMouseEnter={() => setActiveSuggestionIndex(idx)}
+                        className={`w-full text-left px-5 py-4 text-[12px] font-bold font-body transition-colors ${
+                          idx === activeSuggestionIndex ? 'bg-white/10 text-primary' : 'text-white/70 hover:bg-white/5'
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

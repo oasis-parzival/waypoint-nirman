@@ -14,10 +14,7 @@ const manualImageOverrides = new Map([
   ['beas kund', 'https://himtrek.co.in/wp-content/uploads/2025/07/Premium-Beas-Kund-Trek.webp'],
   ['deo tibba base camp', 'https://brozaadventures.com/soft/file_store/detaild_itenary/1952889226CJ.jpg'],
   ['brahmatal', 'https://storage.googleapis.com/stateless-www-justwravel-com/2019/06/Brahmataal-JustWravel-4-1024x682.jpg'],
-  ['buran ghati', 'https://i.ytimg.com/vi/6ZmQQAsBTrY/maxresdefault.jpg'],
-  ['green lake trek', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrve4i3W1JdO8GfVUrh6OVNnWvxjtQRoQnTg&s'],
-  ['phalut trek', 'https://cdn.prod.website-files.com/66e19a4069802b9bae69e911/6710e16c5b15ece70c1101aa_trek-blog-7.jpg'],
-  ['talley valley trek', 'https://www.bikatadventures.com/images/Expeditions/IMG980x500/img-talle-valley-trek-arunachal-pradesh-Bikat-Adventures.png']
+  ['buran ghati', 'https://i.ytimg.com/vi/6ZmQQAsBTrY/maxresdefault.jpg']
 ]);
 
 const getFallbackImageUrl = (trek, { width = 800, height = 600 } = {}) => {
