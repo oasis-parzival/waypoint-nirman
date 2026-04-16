@@ -11,6 +11,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
             --bg-base: #0D0F0D;
@@ -1436,6 +1439,20 @@
 
     <!-- JavaScript Data & Logic -->
     <script>
+        // SOS SIREN SOUND (Encoded for zero external dependencies)
+        const SIREN_BEEP = "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTtvT18AZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZWVlZmZlZ=";
+        const sirenAudio = new Audio(SIREN_BEEP);
+        sirenAudio.loop = false;
+
+        // SUPABASE CONFIGURATION (REPLACE WITH YOUR ACTUAL CREDENTIALS)
+        const SUPABASE_URL = "YOUR_SUPABASE_URL"; 
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+        let supabaseClient = null;
+        if (SUPABASE_URL !== "YOUR_SUPABASE_URL") {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
         const MOCK_DATA = {
             agents: [
                 { id: 1, name: "Arjun Sharma", email: "arjun.s@gmail.com", phone: "+91-9876543210", base: "Uttarakhand", vectors: 12, xp: 2450, ping: "2h ago", status: "ACTIVE" },
@@ -1501,6 +1518,112 @@
                 this.renderAll();
                 this.animateCounters();
                 this.renderMapIcons();
+                this.initRealtimeSOS();
+            }
+
+            async initRealtimeSOS() {
+                if (!supabaseClient) {
+                    console.warn("Supabase credentials missing. Real-time SOS disabled.");
+                    return;
+                }
+
+                console.log("Initializing Real-time SOS Channel...");
+
+                // Subscribe to new SOS alerts
+                supabaseClient
+                    .channel('public:sos_alerts')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sos_alerts' }, payload => {
+                        console.log('NEW SOS RECEIVED:', payload.new);
+                        this.handleNewSOS(payload.new);
+                    })
+                    .subscribe();
+
+                // Initial fetch
+                const { data, error } = await supabaseClient
+                    .from('sos_alerts')
+                    .select('*')
+                    .eq('status', 'CRITICAL')
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) {
+                    data.forEach(alert => {
+                        // Check if already in list to avoid duplicates (though fetch is first)
+                        if (!MOCK_DATA.sos.find(s => s.id === alert.id)) {
+                            MOCK_DATA.sos.unshift({
+                                id: alert.id.toString().substring(0, 4),
+                                agent: alert.user_name,
+                                route: "Live Alert",
+                                location: "Unknown Sector",
+                                coords: alert.coords,
+                                bg: alert.blood_group || "Unknown",
+                                medical: alert.medical_info || "None",
+                                altitude: alert.altitude || "N/A",
+                                weather: "Monitoring...",
+                                timestamp: "JUST NOW"
+                            });
+                        }
+                    });
+                    this.renderSOSSummary();
+                    this.renderSOSPage();
+                }
+            }
+
+            handleNewSOS(alert) {
+                // Play Siren
+                sirenAudio.play().catch(e => console.log("Audio play blocked"));
+
+                // Add to data
+                MOCK_DATA.sos.unshift({
+                    id: alert.id.toString().substring(0, 4),
+                    agent: alert.user_name,
+                    route: "Live Alert",
+                    location: "Unknown Sector",
+                    coords: alert.coords,
+                    bg: alert.blood_group || "Unknown",
+                    medical: alert.medical_info || "None",
+                    altitude: alert.altitude || "N/A",
+                    weather: "Monitoring...",
+                    timestamp: "JUST NOW"
+                });
+
+                // Update Counters
+                const sosStat = document.querySelector('.stat-card.urgent .stat-value');
+                if (sosStat) {
+                    const currentVal = parseInt(sosStat.innerText.replace(/,/g, '')) || 0;
+                    sosStat.innerText = (currentVal + 1).toLocaleString();
+                }
+
+                const sosBadge = document.querySelector('.sos-badge');
+                if (sosBadge) {
+                    sosBadge.innerText = MOCK_DATA.sos.length;
+                }
+
+                // Re-render
+                this.renderSOSSummary();
+                this.renderSOSPage();
+
+                // Visual Notification
+                this.showNotification(`🚨 NEW SOS: ${alert.user_name}`);
+            }
+
+            showNotification(msg) {
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 24px;
+                    right: 24px;
+                    background: var(--accent-red);
+                    color: white;
+                    padding: 16px 32px;
+                    border-radius: 12px;
+                    font-weight: 800;
+                    z-index: 9999;
+                    animation: slideUp 0.3s ease-out;
+                    box-shadow: 0 10px 30px rgba(255, 68, 68, 0.3);
+                `;
+                toast.innerText = msg;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 5000);
             }
 
             setupNavigation() {

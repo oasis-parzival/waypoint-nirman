@@ -23,6 +23,48 @@ const Header = ({ user, onLoginClick }) => {
     setIsMenuOpen(false);
   };
 
+  const handleSOS = async () => {
+    if (!user) {
+      alert("Please login to send an SOS signal.");
+      return;
+    }
+
+    if (!confirm("CONFIRM EMERGENCY SIGNAL? This will send your live location to command center.")) return;
+
+    try {
+      if (!navigator.geolocation) {
+        throw new Error("Geolocation not supported by your browser.");
+      }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude, altitude } = position.coords;
+        const coordsStr = `${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E`;
+        
+        const { error } = await supabase
+          .from('sos_alerts')
+          .insert([
+            {
+              user_id: user.id,
+              user_name: user.email.split('@')[0].toUpperCase(),
+              coords: coordsStr,
+              altitude: altitude ? `${Math.round(altitude)}m` : 'N/A',
+              status: 'CRITICAL',
+              medical_info: 'Pending Update',
+              blood_group: 'Pending'
+            }
+          ]);
+
+        if (error) throw error;
+        alert("🚨 SOS SIGNAL TRANSMITTED. Stay at your location. Help is being notified.");
+      }, (err) => {
+        alert("Error getting location: " + err.message);
+      });
+    } catch (err) {
+      console.error("SOS Error:", err);
+      alert("Failed to transmit SOS signal: " + err.message);
+    }
+  };
+
   return (
     <>
       <header className="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-[2000] w-[94%] md:w-max">
@@ -60,6 +102,14 @@ const Header = ({ user, onLoginClick }) => {
                 </Link>
               )
             ))}
+            
+            {/* EMERGENCY SOS BUTTON */}
+            <button 
+              onClick={handleSOS}
+              className="bg-red-600/20 border border-red-500/50 text-red-500 hover:bg-red-600 hover:text-white px-4 py-1.5 rounded-full font-black text-[9px] uppercase tracking-widest transition-all duration-300 ml-4 animate-pulse"
+            >
+              Emergency SOS
+            </button>
           </nav>
           
           <div className="flex items-center gap-3">
@@ -134,15 +184,27 @@ const Header = ({ user, onLoginClick }) => {
                   ))}
                   
                   {user ? (
-                    <button 
-                      onClick={handleSignOut}
-                      className={`flex items-center gap-8 group mt-4 transition-all duration-500 delay-500 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                    >
-                      <div className="w-10 flex justify-center">
-                         <span className="material-symbols-outlined text-red-500 text-3xl group-hover:scale-125 transition-transform">logout</span>
-                      </div>
-                      <span className="text-3xl md:text-5xl font-black text-white hover:text-red-500 transition-colors uppercase italic tracking-tighter">Sign Out</span>
-                    </button>
+                    <>
+                      <button 
+                        onClick={handleSOS}
+                        className={`flex items-center gap-8 group mt-4 transition-all duration-500 delay-500 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+                      >
+                        <div className="w-10 flex justify-center">
+                           <span className="material-symbols-outlined text-red-500 text-3xl group-hover:scale-125 transition-transform animate-pulse">emergency</span>
+                        </div>
+                        <span className="text-3xl md:text-5xl font-black text-red-500 transition-colors uppercase italic tracking-tighter">Emergency SOS</span>
+                      </button>
+
+                      <button 
+                        onClick={handleSignOut}
+                        className={`flex items-center gap-8 group mt-4 transition-all duration-500 delay-700 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+                      >
+                        <div className="w-10 flex justify-center">
+                           <span className="material-symbols-outlined text-white/40 text-3xl group-hover:scale-125 transition-transform">logout</span>
+                        </div>
+                        <span className="text-3xl md:text-5xl font-black text-white/40 hover:text-white transition-colors uppercase italic tracking-tighter">Sign Out</span>
+                      </button>
+                    </>
                   ) : (
                     <button 
                       onClick={() => { setIsMenuOpen(false); onLoginClick(); }}
