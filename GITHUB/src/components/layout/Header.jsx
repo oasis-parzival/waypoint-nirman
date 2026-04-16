@@ -14,7 +14,9 @@ const Header = ({ user, onLoginClick }) => {
     { name: 'Community', path: '/community', icon: 'forum' },
     { name: 'Experiences', path: '/experiences', icon: 'reviews' },
     { name: 'Plan', path: '/plan', icon: 'edit_calendar' },
+    { name: 'Weather', path: '/weather', icon: 'cloudy_snowing' },
     { name: 'Dashboard', path: '/dashboard', icon: 'person' },
+    { name: 'Admin', path: '/admin', icon: 'terminal' },
   ];
 
   const handleSignOut = async () => {
@@ -89,11 +91,11 @@ const Header = ({ user, onLoginClick }) => {
       </header>
 
       {/* MOBILE FULLSCREEN MENU OVERLAY */}
-      <div className={`fixed inset-0 z-[1950] bg-[#050505]/98 backdrop-blur-3xl transition-all duration-500 md:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-         <div className="flex flex-col h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
-            {/* CENTERED BLOCK WITH LEFT-ALIGNED ITEMS */}
-            <div className="flex-grow flex flex-col items-center justify-center p-10">
-               <div className="flex flex-col gap-10 items-start">
+      <div className={`fixed inset-0 z-[1950] bg-[#050505]/98 backdrop-blur-3xl transition-all duration-500 md:hidden overflow-y-auto custom-scrollbar ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+         <div className="min-h-full flex flex-col bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+            {/* CENTERED BLOCK WITH LEFT-ALIGNED ITEMS - ADDED TOP PADDING TO AVOID PILL */}
+            <div className="flex-grow flex flex-col items-center justify-center p-10 pt-32">
+               <div className="flex flex-col gap-6 md:gap-10 items-start">
                   {navLinks.map((link, idx) => (
                     <Link
                       key={link.name}

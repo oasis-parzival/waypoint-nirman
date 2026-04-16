@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const PlanPage = () => {
   const locationState = useLocation();
@@ -102,9 +103,57 @@ const PlanPage = () => {
     });
   };
 
+  const [selectedGear, setSelectedGear] = useState([]);
+  const [isRequestingGear, setIsRequestingGear] = useState(false);
+  const [gearStatus, setGearStatus] = useState('IDLE'); // IDLE, SENDING, SENT
+
+  const gearOptions = [
+    'Technical Ice Axe', 'Crampons (12-point)', 'Alpine Harness', 'Dynamic Rope (60m)', 
+    'Thermal Sleep System', 'High-Alt Stove', 'Oxygen Supplement', 'Satellite Comm'
+  ];
+
+  const toggleGear = (item) => {
+    setSelectedGear(prev => 
+      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+    );
+  };
+
+  const submitGearRequest = async () => {
+    if (selectedGear.length === 0) return;
+    setIsRequestingGear(true);
+    setGearStatus('SENDING');
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase
+        .from('gear_requests')
+        .insert([{
+          user_id: session?.user?.id,
+          user_email: session?.user?.email || 'ANONYMOUS',
+          trek_name: formData.trekName || 'Unknown Mission',
+          gear_items: selectedGear,
+          request_date: formData.date || new Date().toISOString().split('T')[0],
+          status: 'PENDING'
+        }]);
+
+      if (error) throw error;
+      setGearStatus('SENT');
+      setTimeout(() => {
+        setGearStatus('IDLE');
+        setSelectedGear([]);
+      }, 3000);
+    } catch (err) {
+      console.error('Gear Request Failed:', err);
+      setGearStatus('ERROR');
+      setTimeout(() => setGearStatus('IDLE'), 5000);
+    } finally {
+      setIsRequestingGear(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen selection:bg-primary selection:text-on-primary font-body">
-      {/* BACKGROUND DECOR */}
+      {/* ... existing background decor ... */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <img 
           src="/cinematic_himalayan_summit_onyx_glow_1776257020425.png" 
@@ -124,6 +173,7 @@ const PlanPage = () => {
           </div>
 
           <div className="space-y-6 glass-card p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 overflow-hidden">
+             {/* ... form inputs ... */}
              <div className="space-y-5 md:space-y-6 w-full">
                 <div className="w-full">
                   <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-label mb-2 block">Trek Objective</label>
@@ -139,15 +189,13 @@ const PlanPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                   <div className="w-full min-w-0">
                     <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-label mb-2 block">Window Date</label>
-                    <div className="relative w-full">
-                      <input 
-                        type="date"
-                        name="date"
-                        value={formData.date}
-                        onChange={handleInputChange}
-                        className="w-0 min-w-full block bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white outline-none focus:border-primary/40 transition-colors text-sm appearance-none" 
-                      />
-                    </div>
+                    <input 
+                      type="date"
+                      name="date"
+                      value={formData.date}
+                      onChange={handleInputChange}
+                      className="w-full block bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white outline-none focus:border-primary/40 transition-colors text-sm appearance-none" 
+                    />
                   </div>
                   <div className="w-full min-w-0">
                     <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-label mb-2 block">Group Size</label>
@@ -162,33 +210,6 @@ const PlanPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                  <div className="w-full min-w-0">
-                    <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-label mb-2 block">Difficulty</label>
-                    <select 
-                      name="experience"
-                      value={formData.experience}
-                      onChange={handleInputChange}
-                      className="w-full block bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white/90 font-bold outline-none focus:border-primary/40 transition-colors appearance-none cursor-pointer text-sm"
-                    >
-                      <option className="bg-[#0a0a0a] text-white">Beginner</option>
-                      <option className="bg-[#0a0a0a] text-white">Intermediate</option>
-                      <option className="bg-[#0a0a0a] text-white">Advanced</option>
-                    </select>
-                  </div>
-                  <div className="w-full min-w-0">
-                    <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-label mb-2 block">Duration (Days)</label>
-                    <input 
-                      type="number"
-                      name="duration"
-                      value={formData.duration}
-                      onChange={handleInputChange}
-                      className="w-full block bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white outline-none focus:border-primary/40 transition-colors text-sm" 
-                      placeholder="07"
-                    />
-                  </div>
-                </div>
-
                 <div className="w-full">
                   <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-label mb-2 block">Intelligence Notes</label>
                   <textarea 
@@ -199,9 +220,8 @@ const PlanPage = () => {
                     placeholder="Specific requirements, medical focus..."
                   />
                 </div>
-             </div>
 
-             <div className="flex flex-col gap-3 pt-4 md:pt-6">
+              <div className="flex flex-col gap-3 pt-4 md:pt-6">
                 <button 
                   onClick={() => callGroqAI('plan')}
                   disabled={isLoading}
@@ -225,7 +245,53 @@ const PlanPage = () => {
                     Get Advice
                   </button>
                 </div>
-             </div>
+              </div>
+          </div>
+          </div>
+
+          {/* SEPARATED GEAR DEPOT CARD */}
+          <div className="glass-card p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 overflow-hidden space-y-6">
+                 <div>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest font-label mb-4 block">Gear Depot Logistics</label>
+                    <p className="text-white/40 text-[10px] mb-6 leading-relaxed uppercase tracking-wider">Select tactical assets for your mission. Requests are broadcasted to Base Command instantly.</p>
+                    <div className="grid grid-cols-2 gap-2">
+                       {gearOptions.map(item => (
+                         <button
+                           key={item}
+                           onClick={() => toggleGear(item)}
+                           className={`text-[9px] font-bold uppercase tracking-widest py-3 px-3 rounded-xl border transition-all ${
+                             selectedGear.includes(item) 
+                               ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(107,255,184,0.3)]' 
+                               : 'bg-white/5 text-white/40 border-white/5 hover:border-white/20'
+                           }`}
+                         >
+                           {item}
+                         </button>
+                       ))}
+                    </div>
+                    {selectedGear.length > 0 && (
+                      <button 
+                        onClick={submitGearRequest}
+                        disabled={isRequestingGear}
+                        className="w-full mt-6 py-4 bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 rounded-2xl transition-all flex items-center justify-center gap-3"
+                      >
+                        <span className="material-symbols-outlined text-lg">{gearStatus === 'SENT' ? 'check_circle' : 'inventory_2'}</span>
+                        {gearStatus === 'SENDING' ? 'Initializing Uplink...' : gearStatus === 'SENT' ? 'Broadcast Confirmed' : `Request ${selectedGear.length} Tactical Assets`}
+                      </button>
+                    )}
+                    {gearStatus === 'SENT' && (
+                      <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3 animate-in zoom-in duration-300">
+                        <span className="material-symbols-outlined text-primary">check_circle</span>
+                        <p className="text-[10px] text-primary font-bold uppercase tracking-[0.1em]">Signal Acknowledged. HQ has received your logistics request.</p>
+                      </div>
+                    )}
+                    {gearStatus === 'ERROR' && (
+                      <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
+                        <span className="material-symbols-outlined text-red-400">error</span>
+                        <p className="text-[10px] text-red-400 font-bold uppercase tracking-[0.1em]">Uplink Failed. Check your network connection.</p>
+                      </div>
+                    )}
+                 </div>
           </div>
         </section>
 
