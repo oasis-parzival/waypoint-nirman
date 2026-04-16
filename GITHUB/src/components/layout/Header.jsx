@@ -24,7 +24,7 @@ const Header = ({ user, onLoginClick }) => {
 
   return (
     <>
-      <header className="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-[300] w-[94%] md:w-max">
+      <header className="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-[2000] w-[94%] md:w-max">
         <div className="flex items-center justify-between md:justify-start gap-6 md:gap-12 px-5 md:px-10 py-3 md:py-4 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
@@ -59,7 +59,7 @@ const Header = ({ user, onLoginClick }) => {
              {/* THE "THREE LINES" TOGGLE (MOBILE & TABLET FOCUS) */}
              <button 
                onClick={() => setIsMenuOpen(!isMenuOpen)}
-               className="md:hidden w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/5 relative z-[400]"
+               className="md:hidden w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/5 relative z-[2100]"
              >
                <span className="material-symbols-outlined text-white text-2xl">
                  {isMenuOpen ? 'close' : 'menu'}
@@ -89,7 +89,7 @@ const Header = ({ user, onLoginClick }) => {
       </header>
 
       {/* MOBILE FULLSCREEN MENU OVERLAY */}
-      <div className={`fixed inset-0 z-[250] bg-[#050505]/98 backdrop-blur-3xl transition-all duration-500 md:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-[1950] bg-[#050505]/98 backdrop-blur-3xl transition-all duration-500 md:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
          <div className="flex flex-col h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
             {/* CENTERED BLOCK WITH LEFT-ALIGNED ITEMS */}
             <div className="flex-grow flex flex-col items-center justify-center p-10">

@@ -16,33 +16,51 @@ const ChatbotWidget = () => {
   }, [messages, isTyping]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
 
     const userMessage = input;
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    const newMessages = [...messages, { role: 'user', content: userMessage }];
+    setMessages(newMessages);
     setInput('');
     setIsTyping(true);
 
     try {
-      // Direct call to Groq via local backend or direct API (using the same logic as PlanPage)
-      // For this widget, we'll simulate a response or use the existing Groq key if available
-      // Actually, I'll implement a real call to Groq if possible, but for now a tactical simulator
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: `Analyzing track data for ${userMessage}. Terrain looks challenging. ensure you have localized offline maps before deployment.` 
-        }]);
-        setIsTyping(false);
-      }, 1500);
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { 
+              role: 'system', 
+              content: 'You are the Waypoint Sentinel, a tactical AI assistant for Waypoint, an elite trekking platform. Provide high-intelligence reconnaissance, terrain analysis, and safety protocols. Use a professional, mission-focused, technical tone. Keep responses concise (max 3 sentences) and actionable. Use terminology like "operative", "grid", "recce", "coordinates".' 
+            },
+            ...newMessages.map(m => ({ role: m.role, content: m.content }))
+          ],
+          temperature: 0.5,
+          max_tokens: 300
+        })
+      });
+
+      const data = await response.json();
+      const botResponse = data.choices[0]?.message?.content || "Signal interference detected. Retry uplink.";
+      
+      setMessages(prev => [...prev, { role: 'assistant', content: botResponse }]);
     } catch (err) {
+      console.error('Sentinel Link Error:', err);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Tactical link severed. Intelligence unavailable.' }]);
+    } finally {
       setIsTyping(false);
     }
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[200] flex flex-col items-end">
+    <div className="fixed bottom-8 right-8 z-[200] flex flex-col items-end pointer-events-none">
       {/* CHAT WINDOW */}
-      <div className={`mb-6 w-[85vw] md:w-[400px] h-[500px] glass-card rounded-[2.5rem] border border-white/10 flex flex-col overflow-hidden transition-all duration-500 shadow-2xl ${
+      <div className={`mb-6 w-[85vw] md:w-[400px] h-[500px] glass-card rounded-[2.5rem] border border-white/10 flex flex-col overflow-hidden transition-all duration-500 shadow-2xl pointer-events-auto ${
         isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-90 pointer-events-none'
       }`}>
         <div className="bg-primary p-6 flex items-center justify-between">
@@ -102,7 +120,7 @@ const ChatbotWidget = () => {
       {/* CHAT TOGGLE */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl border-2 ${
+        className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl border-2 pointer-events-auto ${
           isOpen 
             ? 'bg-white text-black border-transparent' 
             : 'bg-primary text-black border-primary/20 hover:scale-110'

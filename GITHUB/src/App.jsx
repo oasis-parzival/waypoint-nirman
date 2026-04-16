@@ -14,6 +14,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import ChatbotWidget from './components/layout/ChatbotWidget';
 import AuthOverlay from './components/auth/AuthOverlay';
+import ScrollToTop from './components/layout/ScrollToTop';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -35,6 +36,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="min-h-screen bg-background flex flex-col font-body">
         <Header 
           user={session?.user} 

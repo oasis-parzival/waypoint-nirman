@@ -18,20 +18,20 @@ const ExperienceCard = ({ review }) => {
         <div className="p-6 md:p-10 space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4 md:gap-5">
               <div className="relative">
                  <img 
-                   src={review.avatar_url} 
+                   src="/logo.png" 
                    alt={review.user_name} 
-                   className="w-14 h-14 rounded-2xl border border-primary/20 bg-primary/10 object-cover"
+                   className="w-12 h-12 md:w-16 md:h-16 rounded-2xl border border-primary/20 bg-primary/10 object-contain p-2"
                  />
-                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-4 border-background" />
+                 <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-primary rounded-full border-4 border-background" />
               </div>
               <div>
-                <h3 className="text-2xl md:text-4xl font-headline italic text-white leading-none uppercase tracking-tighter">
+                <h3 className="text-xl md:text-3xl lg:text-4xl font-headline italic text-white leading-none uppercase tracking-tighter">
                   {review.trek_name}
                 </h3>
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary mt-2">
+                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.25em] text-primary mt-1 md:mt-2">
                   {review.user_name} • {new Date(review.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
@@ -57,7 +57,7 @@ const ExperienceCard = ({ review }) => {
                     <img 
                       src={photo} 
                       alt={`Trek reconnaissance ${idx + 1}`} 
-                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                      className="w-full h-full object-cover transition-all duration-700 hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                     

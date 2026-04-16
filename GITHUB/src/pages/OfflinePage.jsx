@@ -79,30 +79,31 @@ const OfflinePage = () => {
              onClick={() => fileInputRef.current.click()}
              className="w-full relative group cursor-pointer"
            >
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent rounded-[3.5rem] blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative glass-card aspect-square md:aspect-[21/9] rounded-[3rem] border border-white/5 bg-black/40 flex flex-col items-center justify-center p-12 overflow-hidden">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent rounded-[2.5rem] md:rounded-[3.5rem] blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative glass-card min-h-[450px] md:aspect-[21/9] rounded-[2.5rem] md:rounded-[3rem] border border-white/5 bg-black/40 flex flex-col items-center justify-center p-8 md:p-12 overflow-hidden">
                  
                  {/* Decorative radar lines */}
-                 <div className="absolute inset-0 border-[0.5px] border-white/5 rounded-full scale-[1.5] animate-[spin_20s_linear_infinite]" />
-                 <div className="absolute inset-0 border-[0.5px] border-white/5 rounded-full scale-[1.2] animate-[spin_15s_linear_infinite_reverse]" />
+                 <div className="absolute inset-0 border-[0.5px] border-white/5 rounded-full scale-[2] md:scale-[1.5] animate-[spin_20s_linear_infinite] opacity-30" />
+                 <div className="absolute inset-0 border-[0.5px] border-white/5 rounded-full scale-[1.5] md:scale-[1.2] animate-[spin_15s_linear_infinite_reverse] opacity-30" />
                  
-                 <div className="relative z-10 flex flex-col items-center gap-10">
-                    <div className="w-28 h-28 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/40 group-hover:bg-primary/5 transition-all duration-700 shadow-2xl">
-                      <span className="material-symbols-outlined text-7xl text-white/10 group-hover:text-primary transition-colors duration-500">radar</span>
+                 <div className="relative z-10 flex flex-col items-center gap-6 md:gap-10">
+                    <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/40 group-hover:bg-primary/5 transition-all duration-700 shadow-2xl overflow-hidden relative">
+                      <div className="absolute inset-0 bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <img src="/logo.png" alt="Waypoint Logo" className="w-10 h-10 md:w-14 md:h-14 opacity-20 group-hover:opacity-100 group-hover:rotate-12 transition-all duration-700 relative z-10" />
                     </div>
                     
-                    <div className="space-y-4 text-center">
-                       <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic tracking-widest">Initialize Vector Command</h2>
-                       <p className="text-[10px] md:text-xs text-white/40 uppercase tracking-[0.4em] font-label max-w-xs mx-auto leading-relaxed">
+                    <div className="space-y-3 md:space-y-4 text-center px-4">
+                       <h2 className="text-xl md:text-3xl font-black text-white uppercase italic tracking-widest leading-tight">Initialize Vector Command</h2>
+                       <p className="text-[9px] md:text-xs text-white/40 uppercase tracking-[0.3em] md:tracking-[0.4em] font-label max-w-xs mx-auto leading-relaxed">
                          Drop GPX file to decode topographical path vectors and initialize tactical radar
                        </p>
                     </div>
-
+ 
                     <div className="flex flex-col items-center gap-4">
-                       <button className="bg-primary text-black font-black uppercase tracking-widest px-12 py-5 rounded-full text-[11px] hover:scale-105 transition-all shadow-[0_0_60px_rgba(0,255,163,0.4)]">
+                       <button className="bg-primary text-black font-black uppercase tracking-widest px-10 md:px-12 py-4 md:py-5 rounded-full text-[10px] md:text-[11px] hover:scale-105 active:scale-95 transition-all shadow-[0_0_60px_rgba(0,255,163,0.3)]">
                          Deploy Tactical File
                        </button>
-                       <span className="text-[8px] font-bold text-white/20 uppercase tracking-[0.5em]">Supported: .GPX / XML</span>
+                       <span className="text-[7px] md:text-[8px] font-bold text-white/20 uppercase tracking-[0.5em]">Supported: .GPX / XML</span>
                     </div>
                  </div>
               </div>
