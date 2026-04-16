@@ -198,7 +198,10 @@ const DiscoverPage = () => {
         trekName: selectedTrek.Trek_Name,
         location: selectedTrek.District,
         difficulty: selectedTrek.Difficulty || 'Moderate',
-        duration: selectedTrek.Days || '2'
+        duration: selectedTrek.Days || '2',
+        description: selectedTrek.Description,
+        bestSeason: selectedTrek.Best_Season,
+        history: selectedTrek.Historical_Significance
       } 
     });
   };

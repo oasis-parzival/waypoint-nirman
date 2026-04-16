@@ -53,10 +53,11 @@ const LandingPage = () => {
       <div className="relative z-10 w-full">
         {/* HERO SECTION */}
         <section className="relative h-screen w-full flex flex-col justify-center items-center px-6 text-center overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-40">
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-30">
               <source src="/background-video.mp4" type="video/mp4" />
             </video>
+            <img src="/logo.png" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] object-contain opacity-5 mix-blend-screen scale-125 select-none pointer-events-none" alt="Waypoint Monogram" />
             <img src="/cinematic_himalayan_summit_onyx_glow_1776257020425.png" className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-screen" alt="Summit Backdrop" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black"></div>
           </div>
@@ -79,8 +80,8 @@ const LandingPage = () => {
               </p>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-center gap-6 pt-8">
-              <Link to="/discover" className="bg-primary text-on-primary px-16 py-6 rounded-full font-black uppercase tracking-widest text-[10px] md:text-xs shadow-[0_0_60px_rgba(160,209,188,0.3)] hover:scale-105 active:scale-95 transition-all text-center">
+            <div className="flex flex-col md:flex-row justify-center gap-6 pt-8 relative z-20">
+              <Link to="/plan" className="bg-primary text-on-primary px-16 py-6 rounded-full font-black uppercase tracking-widest text-[10px] md:text-xs shadow-[0_0_60px_rgba(160,209,188,0.3)] hover:scale-105 active:scale-95 transition-all text-center">
                 Initialize Route
               </Link>
               <button className="border-2 border-white/20 text-white px-16 py-6 rounded-full font-black uppercase tracking-widest text-[10px] md:text-xs hover:bg-white/5 active:scale-95 transition-all">
@@ -155,11 +156,14 @@ const LandingPage = () => {
         <section className="py-32 md:py-64 text-center px-6 relative bg-black">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-primary/20 blur-[180px] rounded-full"></div>
           <div className="max-w-4xl mx-auto space-y-12 relative z-10">
+            <div className="flex justify-center mb-4">
+               <img src="/logo.png" alt="Waypoint Monogram" className="w-16 h-16 md:w-24 md:h-24 opacity-80" />
+            </div>
             <h2 className="text-6xl md:text-[11rem] font-bold text-white tracking-tighter leading-[0.8] uppercase font-headline">Explore <br /> the <span className="text-primary text-glow">Void.</span></h2>
             <p className="text-white/40 text-xl md:text-2xl font-light max-w-xl mx-auto pb-8 font-body">The peaks are waiting for a new kind of explorer. Deploy your intent below.</p>
-            <button className="bg-white text-black px-16 md:px-24 py-6 md:py-8 rounded-full font-black uppercase tracking-widest text-[10px] md:text-xs active:scale-95 transition-all shadow-2xl">
+            <Link to="/plan" className="bg-white text-black px-16 md:px-24 py-6 md:py-8 rounded-full font-black uppercase tracking-widest text-[10px] md:text-xs active:scale-95 transition-all shadow-2xl inline-block">
               Access Beta Engine
-            </button>
+            </Link>
           </div>
         </section>
         

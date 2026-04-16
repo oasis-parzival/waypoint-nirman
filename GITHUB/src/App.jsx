@@ -3,12 +3,16 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import LandingPage from './pages/LandingPage';
 import DiscoverPage from './pages/DiscoverPage';
+import MapPage from './pages/MapPage';
 import Dashboard from './pages/Dashboard';
 import PlanPage from './pages/PlanPage';
+import OfflinePage from './pages/OfflinePage';
+import CommunityPage from './pages/CommunityPage';
+import Experiences from './pages/Experiences';
 import TrekDetailPage from './pages/TrekDetailPage';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
-import BottomNavBar from './components/layout/BottomNavBar';
+import ChatbotWidget from './components/layout/ChatbotWidget';
 import AuthOverlay from './components/auth/AuthOverlay';
 
 function App() {
@@ -40,13 +44,17 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/map" element={<MapPage />} />
+            <Route path="/offline" element={<OfflinePage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/experiences" element={<Experiences />} />
             <Route path="/plan" element={<PlanPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/trek/:id" element={<TrekDetailPage />} />
           </Routes>
         </main>
         <Footer />
-        <BottomNavBar />
+        <ChatbotWidget />
         
         <AuthOverlay 
           isOpen={isAuthOpen} 

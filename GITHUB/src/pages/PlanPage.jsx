@@ -14,7 +14,7 @@ const PlanPage = () => {
 
   useEffect(() => {
     if (locationState.state) {
-      const { trekName, location, difficulty, duration } = locationState.state;
+      const { trekName, location, difficulty, duration, description, bestSeason, history } = locationState.state;
       
       // Normalize difficulty to our standard tiers
       let mappedExperience = 'Intermediate';
@@ -24,7 +24,7 @@ const PlanPage = () => {
       setFormData(prev => ({
         ...prev,
         trekName: trekName || prev.trekName,
-        notes: location ? `Location context: ${location}` : prev.notes,
+        notes: `Location: ${location || 'N/A'}\nBest Season: ${bestSeason || 'N/A'}\nContext: ${description || ''}\nHistory: ${history || ''}`,
         experience: mappedExperience,
         duration: duration || prev.duration
       }));
@@ -54,15 +54,15 @@ const PlanPage = () => {
       Details: Date: ${formData.date}, Group Size: ${formData.groupSize}, Difficulty: ${formData.experience}, Duration: ${formData.duration} days. 
       Additional Notes: ${formData.notes}. 
       Include daily ascent goals, base camp logistics, and safety checkpoints. 
-      IMPORTANT: Do not use markdown symbols like * or #. Use clear section headers in ALL CAPS and plain bullet points with dashes.`;
+      IMPORTANT: Use plain text only. STRICTLY AVOID symbols like ** or #. Use ALL CAPS for headers and keys like "LOCATION:", "DATE:".`;
     } else if (type === 'packing') {
       prompt = `Generate a technical equipment and packing list for the "${formData.trekName}" trek. 
       Experience Level: ${formData.experience}. Focus on high-altitude survival gear, layering systems, and specialized equipment. 
-      IMPORTANT: Avoid markdown symbols. Use clean text categories and plain dashes for lists.`;
+      IMPORTANT: Plain text only. NO markdown bolding. Use CLEAN CAPS for categories.`;
     } else {
       prompt = `Provide expert strategic recommendations and trail alternatives for an expedition to "${formData.trekName}" for a ${formData.experience} level group. 
       Include risk assessment and weather-window optimization advice. 
-      IMPORTANT: No markdown symbols (* or #). Use plain, structured text.`;
+      IMPORTANT: Plain text only. No markdown symbols.`;
     }
 
     try {
@@ -89,6 +89,17 @@ const PlanPage = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderFormattedResult = (text) => {
+    if (!text) return null;
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="text-primary font-bold">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
   };
 
   return (
@@ -237,7 +248,7 @@ const PlanPage = () => {
                  ) : result ? (
                    <div className="prose prose-invert max-w-none prose-p:text-white/60 prose-headings:text-white prose-strong:text-primary animate-in fade-in slide-in-from-bottom-4 duration-700">
                       <div className="whitespace-pre-wrap font-body text-base leading-relaxed text-white/70">
-                        {result}
+                        {renderFormattedResult(result)}
                       </div>
                    </div>
                  ) : (
