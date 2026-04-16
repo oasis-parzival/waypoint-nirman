@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/layout/Header';
+import { supabase } from '../lib/supabase';
 import TrekIntelligenceCard from '../components/discovery/TrekIntelligenceCard';
 
 const wikiImageCache = new Map();
@@ -22,9 +24,19 @@ const manualImageOverrides = new Map([
 
 const normalizeTitle = (value) => String(value || '').replace(/\s+/g, ' ').trim();
 
-const getFallbackImageUrl = (_trek, { width = 1200 } = {}) => (
-  `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=${width}`
-);
+const getFallbackImageUrl = (trek, { width = 1200, height = 800 } = {}) => {
+  const regionKeywords = (() => {
+    switch (trek?.region) {
+      case 'Sahyadri': return ['Maharashtra', 'fort'];
+      case 'North East': return ['Northeast India', 'mountains', 'trek'];
+      default: return ['Himalayas', 'mountains', 'trek'];
+    }
+  })();
+  const parts = [trek?.Trek_Name, trek?.District, ...regionKeywords, 'landscape']
+    .filter(Boolean).map(s => String(s).trim()).filter(Boolean);
+  const query = parts.map(encodeURIComponent).join(',');
+  return `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=${width}`;
+};
 
 const buildWikiTitleCandidates = (trek) => {
   const trekName = normalizeTitle(trek?.Trek_Name);
@@ -186,7 +198,10 @@ const DiscoverPage = () => {
         trekName: selectedTrek.Trek_Name,
         location: selectedTrek.District,
         difficulty: selectedTrek.Difficulty || 'Moderate',
-        duration: selectedTrek.Days || '2'
+        duration: selectedTrek.Days || '2',
+        description: selectedTrek.Description,
+        bestSeason: selectedTrek.Best_Season,
+        history: selectedTrek.Historical_Significance
       } 
     });
   };

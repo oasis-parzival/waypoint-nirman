@@ -5,6 +5,8 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState({ full_name: '', avatar_url: '', experience_level: 'Beginner' });
   const [completedTreks, setCompletedTreks] = useState([]);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
   const [newTrek, setNewTrek] = useState({ name: '', difficulty: 'Beginner' });
   const [rankInfo, setRankInfo] = useState({ rank: 'Loading...', score: 0 });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -43,6 +45,7 @@ const Dashboard = () => {
     
     if (data) {
       setProfile(data);
+      setNewName(data.full_name || '');
     }
   };
 
@@ -78,6 +81,19 @@ const Dashboard = () => {
     if (data) {
       setCompletedTreks(data);
       calculateMetrics(data);
+    }
+  };
+
+  const updateName = async () => {
+    if (!newName.trim()) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: newName })
+      .eq('id', user.id);
+
+    if (!error) {
+      setProfile({ ...profile, full_name: newName });
+      setIsEditingName(false);
     }
   };
 
@@ -140,6 +156,8 @@ const Dashboard = () => {
       setIsAnalyzing(false);
     }
   };
+
+  const avatarSrc = `https://api.dicebear.com/7.x/initials/svg?seed=${user?.email || 'Waypoint'}`;
 
   return (
     <div className="pt-32 pb-44 px-4 md:px-6 max-w-7xl mx-auto space-y-12">
