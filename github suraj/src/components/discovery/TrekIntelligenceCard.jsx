@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const wikiImageCache = new Map();
-
-const normalizeTitle = (value) => String(value || '').replace(/\s+/g, ' ').trim();
 
 const manualImageOverrides = new Map([
   ['hampta pass', 'https://banzaras.in/wp-content/uploads/2025/06/WhatsApp-Image-2025-06-24-at-13.38.04.jpeg'],
@@ -14,50 +12,31 @@ const manualImageOverrides = new Map([
   ['beas kund', 'https://himtrek.co.in/wp-content/uploads/2025/07/Premium-Beas-Kund-Trek.webp'],
   ['deo tibba base camp', 'https://brozaadventures.com/soft/file_store/detaild_itenary/1952889226CJ.jpg'],
   ['brahmatal', 'https://storage.googleapis.com/stateless-www-justwravel-com/2019/06/Brahmataal-JustWravel-4-1024x682.jpg'],
-  ['buran ghati', 'https://i.ytimg.com/vi/6ZmQQAsBTrY/maxresdefault.jpg']
+  ['buran ghati', 'https://i.ytimg.com/vi/6ZmQQAsBTrY/maxresdefault.jpg'],
+  ['green lake trek', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrve4i3W1JdO8GfVUrh6OVNnWvxjtQRoQnTg&s'],
+  ['phalut trek', 'https://cdn.prod.website-files.com/66e19a4069802b9bae69e911/6710e16c5b15ece70c1101aa_trek-blog-7.jpg'],
+  ['talley valley trek', 'https://www.bikatadventures.com/images/Expeditions/IMG980x500/img-talle-valley-trek-arunachal-pradesh-Bikat-Adventures.png']
 ]);
 
-const getFallbackImageUrl = (trek, { width = 800, height = 600 } = {}) => {
-  const regionKeywords = (() => {
-    switch (trek?.region) {
-      case 'Sahyadri':
-        return ['Maharashtra', 'fort'];
-      case 'North East':
-        return ['Northeast India', 'mountains', 'trek'];
-      case 'North India':
-      default:
-        return ['Himalayas', 'mountains', 'trek'];
-    }
-  })();
+const normalizeTitle = (value) => String(value || '').replace(/\s+/g, ' ').trim();
 
-  const parts = [trek?.Trek_Name, trek?.District, ...regionKeywords, 'landscape']
-    .filter(Boolean)
-    .map((s) => String(s).trim())
-    .filter(Boolean);
-
-  const query = encodeURIComponent(parts.join(','));
-  return `https://source.unsplash.com/featured/${width}x${height}?${query}`;
-};
+const getFallbackImageUrl = (_trek, { width = 800 } = {}) => (
+  `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=${width}`
+);
 
 const buildWikiTitleCandidates = (trek) => {
   const trekName = normalizeTitle(trek?.Trek_Name);
   const district = normalizeTitle(trek?.District);
-
   if (!trekName) return [];
-
   const candidates = [trekName];
-
   if (district) {
     candidates.push(`${trekName}, ${district}`);
     candidates.push(`${trekName} (${district})`);
   }
-
   if (trek?.region === 'Sahyadri') {
-    const hasFort = /\bfort\b/i.test(trekName);
-    if (!hasFort) candidates.push(`${trekName} Fort`);
+    if (!/\bfort\b/i.test(trekName)) candidates.push(`${trekName} Fort`);
     candidates.push(`${trekName} (fort)`);
   }
-
   return Array.from(new Set(candidates));
 };
 
@@ -83,10 +62,7 @@ const resolveTrekImageUrl = async (trek, signal) => {
     const img = await fetchWikiImageUrl(title, signal);
     if (img) return img;
   }
-  const trekName = normalizeTitle(trek?.Trek_Name);
-  const district = normalizeTitle(trek?.District);
-  const hint = trek?.region === 'Sahyadri' ? 'fort' : 'trek';
-  const searchQuery = [trekName, district, hint, 'India'].filter(Boolean).join(' ');
+  const searchQuery = [normalizeTitle(trek?.Trek_Name), normalizeTitle(trek?.District), trek?.region === 'Sahyadri' ? 'fort' : 'trek', 'India'].filter(Boolean).join(' ');
   const bestTitle = await fetchWikiSearchTopTitle(searchQuery, signal);
   if (bestTitle) {
     const img = await fetchWikiImageUrl(bestTitle, signal);
@@ -96,18 +72,39 @@ const resolveTrekImageUrl = async (trek, signal) => {
 };
 
 const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
-  const trekName = trek?.Trek_Name;
-  const trekDistrict = trek?.District;
-  const trekRegion = trek?.region;
-
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState('');
   const [isAsking, setIsAsking] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
-  const [imageSrc, setImageSrc] = useState(() => getFallbackImageUrl({ Trek_Name: trekName, District: trekDistrict, region: trekRegion }, { width: 800, height: 600 }));
+  const [imageSrc, setImageSrc] = useState(() => getFallbackImageUrl(trek));
 
-  const GROQ_API_KEY = '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';
+  const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
   const GROQ_MODEL = 'llama-3.1-8b-instant';
+
+  useEffect(() => {
+    const cacheKey = normalizeTitle(trek.Trek_Name).toLowerCase();
+    const manualOverride = manualImageOverrides.get(cacheKey);
+
+    if (manualOverride) {
+      setImageSrc(manualOverride);
+      return;
+    }
+
+    if (wikiImageCache.has(cacheKey)) {
+      setImageSrc(wikiImageCache.get(cacheKey));
+      return;
+    }
+
+    const controller = new AbortController();
+    resolveTrekImageUrl(trek, controller.signal).then(url => {
+      if (url) {
+        wikiImageCache.set(cacheKey, url);
+        setImageSrc(url);
+      }
+    });
+
+    return () => controller.abort();
+  }, [trek.Trek_Name]);
 
   const askIntelligence = async (e) => {
     e.preventDefault();
@@ -156,36 +153,6 @@ const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
     }
   };
 
-  useEffect(() => {
-    const trekImageData = { Trek_Name: trekName, District: trekDistrict, region: trekRegion };
-    const cacheKey = `${normalizeTitle(trekRegion)}|${normalizeTitle(trekDistrict)}|${normalizeTitle(trekName)}`;
-    const manualOverride = manualImageOverrides.get(normalizeTitle(trekName).toLowerCase());
-
-    if (manualOverride) {
-      wikiImageCache.set(cacheKey, manualOverride);
-      setImageSrc(manualOverride);
-      return;
-    }
-
-    if (wikiImageCache.has(cacheKey)) {
-      const cached = wikiImageCache.get(cacheKey);
-      setImageSrc(cached || getFallbackImageUrl(trekImageData, { width: 800, height: 600 }));
-      return;
-    }
-
-    setImageSrc(getFallbackImageUrl(trekImageData, { width: 800, height: 600 }));
-
-    const controller = new AbortController();
-    resolveTrekImageUrl(trekImageData, controller.signal)
-      .then((url) => {
-        wikiImageCache.set(cacheKey, url);
-        if (url) setImageSrc(url);
-      })
-      .catch(() => {});
-
-    return () => controller.abort();
-  }, [trekRegion, trekDistrict, trekName]);
-
   return (
     <div 
       onClick={() => onDetailClick(trek)}
@@ -195,11 +162,10 @@ const TrekIntelligenceCard = ({ trek, onDetailClick }) => {
         <img 
           src={imageSrc}
           onError={(e) => {
-            e.target.src = `https://images.unsplash.com/photo-1620662512398-94537122e196?auto=format&fit=crop&q=80&w=800`;
+            e.target.src = `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800`;
           }}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-90 group-hover:opacity-100" 
           alt={trek.Trek_Name} 
-          loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent"></div>
         <div className="absolute top-6 left-6 flex gap-2">

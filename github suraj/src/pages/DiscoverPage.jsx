@@ -1,51 +1,44 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TrekIntelligenceCard from '../components/discovery/TrekIntelligenceCard';
 
 const wikiImageCache = new Map();
 
+const manualImageOverrides = new Map([
+  ['hampta pass', 'https://banzaras.in/wp-content/uploads/2025/06/WhatsApp-Image-2025-06-24-at-13.38.04.jpeg'],
+  ['ambolgad fort', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeWLCwoO1Y5r7hLqU2oSb2L9SE85BO44bl_w&s'],
+  ['asava fort', 'https://d3sftlgbtusmnv.cloudfront.net/blog/wp-content/uploads/2024/10/Asava-Fort-Cover-Photo-840x425.jpg'],
+  ['ballarpur fort', 'https://redearth.in/blog/wp-content/uploads/2022/03/Ballarpur-Fort-Pallavi-Jayaraman-1-1024x635.jpg'],
+  ['bhamer', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgfxaB8GeJfJARxZm5YFlleHYj8EVJYSTX2w&s'],
+  ['nag tibba', 'https://imgcld.yatra.com/ytimages/image/upload/v1517481327/AdvNation/ANN_TRP171/BloomingRhododendronForest_1432206825_NQvgOC.jpg'],
+  ['beas kund', 'https://himtrek.co.in/wp-content/uploads/2025/07/Premium-Beas-Kund-Trek.webp'],
+  ['deo tibba base camp', 'https://brozaadventures.com/soft/file_store/detaild_itenary/1952889226CJ.jpg'],
+  ['brahmatal', 'https://storage.googleapis.com/stateless-www-justwravel-com/2019/06/Brahmataal-JustWravel-4-1024x682.jpg'],
+  ['buran ghati', 'https://i.ytimg.com/vi/6ZmQQAsBTrY/maxresdefault.jpg'],
+  ['green lake trek', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrve4i3W1JdO8GfVUrh6OVNnWvxjtQRoQnTg&s'],
+  ['phalut trek', 'https://cdn.prod.website-files.com/66e19a4069802b9bae69e911/6710e16c5b15ece70c1101aa_trek-blog-7.jpg'],
+  ['talley valley trek', 'https://www.bikatadventures.com/images/Expeditions/IMG980x500/img-talle-valley-trek-arunachal-pradesh-Bikat-Adventures.png']
+]);
+
 const normalizeTitle = (value) => String(value || '').replace(/\s+/g, ' ').trim();
 
-const getFallbackImageUrl = (trek, { width = 1200, height = 800 } = {}) => {
-  const regionKeywords = (() => {
-    switch (trek?.region) {
-      case 'Sahyadri':
-        return ['Maharashtra', 'fort'];
-      case 'North East':
-        return ['Northeast India', 'mountains', 'trek'];
-      case 'North India':
-      default:
-        return ['Himalayas', 'mountains', 'trek'];
-    }
-  })();
-
-  const parts = [trek?.Trek_Name, trek?.District, ...regionKeywords, 'landscape']
-    .filter(Boolean)
-    .map((s) => String(s).trim())
-    .filter(Boolean);
-
-  const query = parts.map(encodeURIComponent).join(',');
-  return `https://source.unsplash.com/featured/${width}x${height}?${query}`;
-};
+const getFallbackImageUrl = (_trek, { width = 1200 } = {}) => (
+  `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=${width}`
+);
 
 const buildWikiTitleCandidates = (trek) => {
   const trekName = normalizeTitle(trek?.Trek_Name);
   const district = normalizeTitle(trek?.District);
-
   if (!trekName) return [];
-
   const candidates = [trekName];
-
   if (district) {
     candidates.push(`${trekName}, ${district}`);
     candidates.push(`${trekName} (${district})`);
   }
-
   if (trek?.region === 'Sahyadri') {
-    const hasFort = /\bfort\b/i.test(trekName);
-    if (!hasFort) candidates.push(`${trekName} Fort`);
+    if (!/\bfort\b/i.test(trekName)) candidates.push(`${trekName} Fort`);
     candidates.push(`${trekName} (fort)`);
   }
-
   return Array.from(new Set(candidates));
 };
 
@@ -119,6 +112,84 @@ const DiscoverPage = () => {
   const [selectedTrekImageSrc, setSelectedTrekImageSrc] = useState(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const navigate = useNavigate();
+
+  const searchSuggestions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+
+    const names = allTreks
+      .filter((t) => activeRegion === 'All' || t.region === activeRegion)
+      .map((t) => t.Trek_Name)
+      .filter(Boolean);
+
+    const unique = Array.from(new Set(names));
+
+    return unique
+      .filter((name) => {
+        const n = String(name).toLowerCase();
+        return n.startsWith(q) || n.split(/\s+/).some((w) => w.startsWith(q));
+      })
+      .sort((a, b) => String(a).localeCompare(String(b)))
+      .slice(0, 8);
+  }, [allTreks, activeRegion, searchQuery]);
+
+  useEffect(() => {
+    setActiveSuggestionIndex(searchSuggestions.length ? 0 : -1);
+  }, [searchSuggestions]);
+
+  const applySuggestion = (name) => {
+    setSearchQuery(name);
+    setIsSearchFocused(false);
+    setActiveSuggestionIndex(-1);
+  };
+
+  useEffect(() => {
+    if (!selectedTrek) {
+      setSelectedTrekImageSrc(null);
+      return;
+    }
+
+    const cacheKey = normalizeTitle(selectedTrek.Trek_Name).toLowerCase();
+    const manualOverride = manualImageOverrides.get(cacheKey);
+
+    if (manualOverride) {
+      setSelectedTrekImageSrc(manualOverride);
+      return;
+    }
+
+    if (wikiImageCache.has(cacheKey)) {
+      const cached = wikiImageCache.get(cacheKey);
+      setSelectedTrekImageSrc(cached || getFallbackImageUrl(selectedTrek));
+      return;
+    }
+
+    // High-fidelity resolution sequence
+    const controller = new AbortController();
+    resolveTrekImageUrl(selectedTrek, controller.signal, 1200)
+      .then((url) => {
+        wikiImageCache.set(cacheKey, url);
+        if (url) setSelectedTrekImageSrc(url);
+        else setSelectedTrekImageSrc(getFallbackImageUrl(selectedTrek));
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, [selectedTrek]);
+
+  const handleInitializePlan = () => {
+    if (!selectedTrek) return;
+    
+    // Smoothly transition to the generator with pre-filled vectors
+    navigate('/plan', { 
+      state: { 
+        trekName: selectedTrek.Trek_Name,
+        location: selectedTrek.District,
+        difficulty: selectedTrek.Difficulty || 'Moderate',
+        duration: selectedTrek.Days || '2'
+      } 
+    });
+  };
 
   useEffect(() => {
     const loadAllTreks = async () => {
@@ -162,33 +233,6 @@ const DiscoverPage = () => {
     loadAllTreks();
   }, []);
 
-  useEffect(() => {
-    if (!selectedTrek) {
-      setSelectedTrekImageSrc(null);
-      return;
-    }
-
-    const cacheKey = `${normalizeTitle(selectedTrek?.region)}|${normalizeTitle(selectedTrek?.District)}|${normalizeTitle(selectedTrek?.Trek_Name)}`;
-
-    if (wikiImageCache.has(cacheKey)) {
-      const cached = wikiImageCache.get(cacheKey);
-      setSelectedTrekImageSrc(cached || getFallbackImageUrl(selectedTrek, { width: 1200, height: 800 }));
-      return;
-    }
-
-    setSelectedTrekImageSrc(getFallbackImageUrl(selectedTrek, { width: 1200, height: 800 }));
-
-    const controller = new AbortController();
-    resolveTrekImageUrl(selectedTrek, controller.signal, 1200)
-      .then((url) => {
-        wikiImageCache.set(cacheKey, url);
-        if (url) setSelectedTrekImageSrc(url);
-      })
-      .catch(() => {});
-
-    return () => controller.abort();
-  }, [selectedTrek]);
-
   const filteredTreks = allTreks.filter(t => {
     const matchesSearch = 
       t.Trek_Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -199,37 +243,6 @@ const DiscoverPage = () => {
     
     return matchesSearch && matchesRegion;
   });
-
-  const searchSuggestions = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return [];
-
-    const names = allTreks
-      .filter((t) => activeRegion === 'All' || t.region === activeRegion)
-      .map((t) => t.Trek_Name)
-      .filter(Boolean);
-
-    const unique = Array.from(new Set(names));
-
-    return unique
-      .filter((name) => {
-        const n = String(name).toLowerCase();
-        if (n.startsWith(q)) return true;
-        return n.split(/\s+/).some((w) => w.startsWith(q));
-      })
-      .sort((a, b) => String(a).localeCompare(String(b)))
-      .slice(0, 8);
-  }, [allTreks, activeRegion, searchQuery]);
-
-  useEffect(() => {
-    setActiveSuggestionIndex(searchSuggestions.length ? 0 : -1);
-  }, [searchSuggestions]);
-
-  const applySuggestion = (name) => {
-    setSearchQuery(name);
-    setIsSearchFocused(false);
-    setActiveSuggestionIndex(-1);
-  };
 
   const regions = ['All', 'Sahyadri', 'North India', 'North East'];
 
@@ -248,93 +261,69 @@ const DiscoverPage = () => {
       <main className="relative z-10 pt-32 pb-44 px-4 md:px-6 max-w-7xl mx-auto space-y-16">
         {/* Search & Filter Header */}
         <section className="space-y-12">
-          <div className="space-y-4">
-             <span className="text-primary font-bold text-[10px] uppercase tracking-[0.4em] font-label">Expedition Matrix</span>
-             <h1 className="text-5xl md:text-8xl font-bold text-white font-headline leading-[0.9] tracking-tighter uppercase italic">
-               Discover <br/> <span className="text-primary">Intelligence.</span>
-             </h1>
-          </div>
-          
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-col md:flex-row gap-4 max-w-3xl">
-              <div className="w-full space-y-2">
-                <div className="flex-grow flex items-center gap-4 px-6 py-5 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-3xl focus-within:border-primary/40 transition-all">
-                  <span className="material-symbols-outlined text-white/20">search</span>
-                  <input 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 120)}
-                    onKeyDown={(e) => {
-                      if (!isSearchFocused || searchSuggestions.length === 0) return;
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+            <div className="space-y-4">
+              <span className="text-primary font-bold text-[10px] uppercase tracking-[0.4em] font-label font-headline italic">Expedition Matrix</span>
+              <h1 className="text-5xl md:text-8xl font-bold text-white tracking-tighter uppercase font-headline">The <span className="text-primary italic">Nexus.</span></h1>
+              <p className="text-white/40 text-lg md:text-2xl font-light font-body max-w-xl">Unified catalog of global route intelligence and tactical terrain data.</p>
+            </div>
+            <div className="relative group w-full md:w-96">
+              <div className={`relative flex items-center bg-white/5 backdrop-blur-3xl rounded-full border transition-all duration-500 overflow-hidden ${isSearchFocused ? 'border-primary ring-4 ring-primary/10' : 'border-white/10 group-hover:border-white/20'}`}>
+                <span className={`material-symbols-outlined ml-6 transition-colors ${isSearchFocused ? 'text-primary' : 'text-white/20'}`}>search</span>
+                <input 
+                  type="text"
+                  placeholder="Query expeditions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+                      applySuggestion(searchSuggestions[activeSuggestionIndex]);
+                    } else if (e.key === 'ArrowDown') {
+                      setActiveSuggestionIndex(prev => Math.min(prev + 1, searchSuggestions.length - 1));
+                    } else if (e.key === 'ArrowUp') {
+                      setActiveSuggestionIndex(prev => Math.max(prev - 1, 0));
+                    }
+                  }}
+                  className="w-full bg-transparent px-4 py-6 text-white text-sm outline-none placeholder:text-white/10 font-label tracking-widest font-bold"
+                />
+              </div>
 
-                      if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        setActiveSuggestionIndex((i) => Math.min(i + 1, searchSuggestions.length - 1));
-                        return;
-                      }
-
-                      if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        setActiveSuggestionIndex((i) => Math.max(i - 1, 0));
-                        return;
-                      }
-
-                      if (e.key === 'Enter') {
-                        if (activeSuggestionIndex >= 0 && activeSuggestionIndex < searchSuggestions.length) {
-                          e.preventDefault();
-                          applySuggestion(searchSuggestions[activeSuggestionIndex]);
-                        }
-                        return;
-                      }
-
-                      if (e.key === 'Escape') {
-                        e.preventDefault();
-                        setIsSearchFocused(false);
-                        return;
-                      }
-                    }}
-                    className="bg-transparent border-none outline-none text-white w-full placeholder:text-white/10 font-body text-sm" 
-                    placeholder="Global query: Trek name, district, or difficulty..." 
-                  />
-                </div>
-                {isSearchFocused && searchSuggestions.length > 0 && (
-                  <div className="bg-black/80 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.8)]">
-                    {searchSuggestions.map((name, idx) => (
+              {/* SEARCH SUGGESTIONS DROP-DOWN */}
+              {isSearchFocused && searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-4 bg-surface-container-low/95 backdrop-blur-2xl border border-white/5 rounded-[2rem] overflow-hidden z-50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] animate-in fade-in slide-in-from-top-4 duration-300">
+                  <div className="p-3">
+                    {searchSuggestions.map((name, i) => (
                       <button
                         key={name}
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => applySuggestion(name)}
-                        onMouseEnter={() => setActiveSuggestionIndex(idx)}
-                        className={`w-full text-left px-5 py-4 text-[12px] font-bold font-body transition-colors ${
-                          idx === activeSuggestionIndex ? 'bg-white/10 text-primary' : 'text-white/70 hover:bg-white/5'
-                        }`}
+                        className={`w-full text-left px-6 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all ${i === activeSuggestionIndex ? 'bg-primary text-black' : 'text-white/50 hover:bg-white/5 hover:text-white'}`}
                       >
-                        {name}
+                         {name}
                       </button>
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
+          </div>
 
-            {/* Region Filters */}
-            <div className="flex flex-wrap gap-3">
-               {regions.map(region => (
-                 <button
-                   key={region}
-                   onClick={() => setActiveRegion(region)}
-                   className={`px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-                     activeRegion === region 
-                     ? 'bg-primary text-black scale-105 shadow-[0_10px_30px_rgba(34,211,238,0.3)]' 
-                     : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white'
-                   }`}
-                 >
-                   {region}
-                 </button>
-               ))}
-            </div>
+          {/* Region Filters */}
+          <div className="flex flex-wrap gap-3">
+             {regions.map(region => (
+               <button
+                 key={region}
+                 onClick={() => setActiveRegion(region)}
+                 className={`px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                   activeRegion === region 
+                   ? 'bg-primary text-black scale-105 shadow-[0_10px_30px_rgba(34,211,238,0.3)]' 
+                   : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white'
+                 }`}
+               >
+                 {region}
+               </button>
+             ))}
           </div>
         </section>
 
@@ -382,17 +371,16 @@ const DiscoverPage = () => {
            ></div>
            
            <div className="relative w-full max-w-4xl h-[92vh] md:h-auto md:max-h-[90vh] bg-surface-container-low border-t md:border border-white/10 rounded-t-[3rem] md:rounded-[3rem] shadow-[0_-20px_100px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-500 md:zoom-in">
-              {/* Modal Image Header */}
-              <div className="relative h-48 md:h-96 w-full flex-shrink-0">
-                 <img 
-                   src={selectedTrekImageSrc || getFallbackImageUrl(selectedTrek, { width: 1200, height: 800 })}
-                   className="w-full h-full object-cover"
-                   alt={selectedTrek.Trek_Name}
-                   onError={(e) => {
-                     e.target.src = "https://images.unsplash.com/photo-1620662512398-94537122e196?auto=format&fit=crop&q=80&w=1200";
-                   }}
-                   loading="lazy"
-                 />
+               {/* Modal Image Header */}
+                <div className="relative h-48 md:h-96 w-full flex-shrink-0">
+                  <img 
+                    src={selectedTrekImageSrc || `https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1200`}
+                    className="w-full h-full object-cover"
+                    alt={selectedTrek.Trek_Name}
+                    onError={(e) => {
+                      e.target.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1200";
+                    }}
+                  />
                  <div className="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent"></div>
                  <button 
                    onClick={() => setSelectedTrek(null)}
@@ -447,7 +435,10 @@ const DiscoverPage = () => {
                        <span className="hidden md:block w-1 h-1 bg-white/20 rounded-full"></span>
                        <span className="flex items-center gap-2 font-bold text-primary">Status: Accessible</span>
                     </div>
-                    <button className="w-full md:w-auto px-10 py-5 bg-white text-black font-black uppercase tracking-widest text-[10px] md:text-xs rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(255,255,255,0.15)]">
+                    <button 
+                      onClick={handleInitializePlan}
+                      className="w-full md:w-auto px-10 py-5 bg-white text-black font-black uppercase tracking-widest text-[10px] md:text-xs rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(255,255,255,0.15)]"
+                    >
                        Initialize Route Plan
                     </button>
                  </div>

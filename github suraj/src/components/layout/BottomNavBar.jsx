@@ -8,6 +8,7 @@ const BottomNavBar = () => {
     { name: 'Discover', path: '/discover', icon: 'explore' },
     { name: 'Plan', path: '/plan', icon: 'map' },
     { name: 'Dashboard', path: '/dashboard', icon: 'person' },
+    { name: 'Community', path: '/community', icon: 'forum' },
   ];
 
   return (
