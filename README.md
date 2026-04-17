@@ -18,7 +18,7 @@ Waypoint is a state-of-the-art, AI-powered trekking intelligence platform built 
 
 ---
 
-## 🏔 System Overview
+## // System Overview
 
 Waypoint operates on a "Neural Expedition Protocol" philosophy. Every module is designed around one principle: **Data over guesswork. Intelligence over improvisation.**
 
@@ -26,7 +26,7 @@ The platform covers the full trekking lifecycle — discovery, planning, real-ti
 
 ---
 
-## 🗺 Core Modules
+## // Core Modules
 
 ### 1. Discover
 <p align="center">
