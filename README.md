@@ -79,6 +79,7 @@ Personalized intelligence for the individual explorer.
 <p align="center">
   <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/10.jpeg?raw=true" width="30%" alt="Waypoint Hero">
 </p>
+
 - **Strategy Analysis:** AI module that analyses your completed trek history and generates a high-altitude strategy for upcoming missions
 - **Active Vectors:** Ongoing missions and recently synchronized routes
 - **Trek Analytics:** Progress tracking across difficulty levels and regions
@@ -88,6 +89,7 @@ Built for when the network disappears.
 <p align="center">
   <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/4.jpeg?raw=true" width="30%" alt="Waypoint Hero">
 </p>
+
 - **Tactical Maps:** Integrated geospatial interface for precise trail positioning
 - **Offline Grid (PWA):** Zero-bandwidth navigation profiles ensuring safety in dead zones — no signal required
 
@@ -97,6 +99,7 @@ The ground intelligence layer.
   <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/6.jpeg?raw=true" width="30%" alt="Waypoint AI Planner">
   <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/7.jpeg?raw=true" width="30%" alt="Waypoint Weather">
 </p>
+
 - **SOS Feed:** Public awareness feed of active and resolved emergency signals
 - **Field Archives:** Visual grid of terrain photos and field logs contributed by trekkers across the network — a living, growing knowledge base for every trail
 
