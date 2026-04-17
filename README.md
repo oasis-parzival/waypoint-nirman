@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://waypoint-trek.netlify.app/">
-    <img src="YOUR_HERO_SCREENSHOT_URL_HERE" width="100%" alt="Waypoint Hero — Neural Expedition Protocol">
+    <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/1.jpeg?raw=true" width="100%" alt="Waypoint Hero — Neural Expedition Protocol">
   </a>
 </p>
 
