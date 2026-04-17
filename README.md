@@ -7,18 +7,11 @@
 [![Netlify](https://img.shields.io/badge/Deployed-Netlify-00C7B7)](https://waypoint-trek.netlify.app/)
 
 <p align="center">
-  <a href="https://waypoint-trek.netlify.app/">
-    <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/1.jpeg?raw=true" width="100%" alt="Waypoint Hero — Neural Expedition Protocol">
-  </a>
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/1.jpeg?raw=true" width="30%" alt="Waypoint Hero">
 </p>
-
 <p align="center">
-  <a href="https://waypoint-trek.netlify.app/">
-    <img src="YOUR_DISCOVER_PAGE_SCREENSHOT_URL_HERE" width="49%" alt="Waypoint Discover Page">
-  </a>
-  <a href="https://waypoint-trek.netlify.app/">
-    <img src="YOUR_PLAN_PAGE_SCREENSHOT_URL_HERE" width="49%" alt="Waypoint AI Planner — The Sentinel">
-  </a>
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/6.jpeg?raw=true" width="30%" alt="Waypoint AI Planner">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/4.jpeg?raw=true" width="30%" alt="Waypoint Weather">
 </p>
 
 Waypoint is a state-of-the-art, AI-powered trekking intelligence platform built for India. It solves the fragmented trekking ecosystem by combining a structured trek database, real-time environmental intelligence, and an AI expedition generator — **The Sentinel** — into a single, cohesive system. Not a travel app. A mission-critical trekking command layer.
@@ -36,6 +29,9 @@ The platform covers the full trekking lifecycle — discovery, planning, real-ti
 ## 🗺 Core Modules
 
 ### 1. Discover
+<p align="center">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/1.jpeg?raw=true" width="30%" alt="Waypoint Hero">
+</p>
 A unified route intelligence database synchronized across three major Indian trekking regions.
 
 - **Multi-Region Data:** Sahyadri, North India, and North East India
@@ -43,11 +39,11 @@ A unified route intelligence database synchronized across three major Indian tre
 - **Trek Intelligence Cards:** AI-fetched high-fidelity imagery with difficulty ratings, altitude data, and seasonal windows
 - **Sustainability Layer:** Seasonal window guidance reduces ecosystem pressure by routing trekkers at the right time of year
 
-<p align="center">
-  <img src="YOUR_DISCOVER_CARDS_SCREENSHOT_URL_HERE" width="100%" alt="Waypoint Discover — Trek Intelligence Cards">
-</p>
 
 ### 2. Plan — The Sentinel
+<p align="center">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/3.jpeg?raw=true" width="30%" alt="Waypoint Hero">
+</p>
 The heart of Waypoint's AI capability.
 
 - **Expedition Generator:** Input your experience level, dates, and destination — The Sentinel constructs a complete day-by-day expedition plan
@@ -55,12 +51,13 @@ The heart of Waypoint's AI capability.
 - **Outputs:** Safety warnings, checkpoint coordinates, altitude flags, gear requirements, and contingency notes
 - **Purpose-Built:** Not a generic LLM wrapper — trained context specifically around Indian terrain and trekking conditions
 
-<p align="center">
-  <img src="YOUR_SENTINEL_AI_SCREENSHOT_URL_HERE" width="100%" alt="Waypoint Plan — The Sentinel AI Generator">
-</p>
 
 ### 3. Weather Intelligence
 Real-time meteorological data for critical trekking zones.
+<p align="center">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/8.jpeg?raw=true" width="30%" alt="Waypoint AI Planner">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/9.jpeg?raw=true" width="30%" alt="Waypoint Weather">
+</p>
 
 - **Live Tracking:** Temperature, Wind Speed, Atmospheric Pressure, and Visibility
 - **Key Zones:** Manali, Leh, Munnar, and more
@@ -68,32 +65,38 @@ Real-time meteorological data for critical trekking zones.
 
 ### 4. SOS Emergency Beacon + Admin Command Terminal
 Waypoint's most critical safety infrastructure.
-
+<p align="center">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/7.jpeg?raw=true" width="30%" alt="Waypoint Hero">
+</p>
 - **Zero-Latency Dispatch:** Captures high-precision GPS coordinates on trigger and broadcasts a priority signal instantly
 - **Admin Terminal:** Real-time tracking of all signals from `ACTIVE → RESOLVED`
 - **Secure Handling:** Signals are encrypted end-to-end with full geolocation visibility for command personnel
 - **Security Layer:** Admin terminal is protected by a secondary authentication key
 
-<p align="center">
-  <img src="YOUR_SOS_ADMIN_SCREENSHOT_URL_HERE" width="100%" alt="Waypoint Admin — SOS Command Terminal">
-</p>
 
 ### 5. User Dashboard
 Personalized intelligence for the individual explorer.
-
+<p align="center">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/10.jpeg?raw=true" width="30%" alt="Waypoint Hero">
+</p>
 - **Strategy Analysis:** AI module that analyses your completed trek history and generates a high-altitude strategy for upcoming missions
 - **Active Vectors:** Ongoing missions and recently synchronized routes
 - **Trek Analytics:** Progress tracking across difficulty levels and regions
 
 ### 6. Map & Offline Grid
 Built for when the network disappears.
-
+<p align="center">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/4.jpeg?raw=true" width="30%" alt="Waypoint Hero">
+</p>
 - **Tactical Maps:** Integrated geospatial interface for precise trail positioning
 - **Offline Grid (PWA):** Zero-bandwidth navigation profiles ensuring safety in dead zones — no signal required
 
 ### 7. Community & Experiences
 The ground intelligence layer.
-
+<p align="center">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/6.jpeg?raw=true" width="30%" alt="Waypoint AI Planner">
+  <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/7.jpeg?raw=true" width="30%" alt="Waypoint Weather">
+</p>
 - **SOS Feed:** Public awareness feed of active and resolved emergency signals
 - **Field Archives:** Visual grid of terrain photos and field logs contributed by trekkers across the network — a living, growing knowledge base for every trail
 
