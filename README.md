@@ -40,7 +40,7 @@ A unified route intelligence database synchronized across three major Indian tre
 - **Sustainability Layer:** Seasonal window guidance reduces ecosystem pressure by routing trekkers at the right time of year
 
 
-### 2. Plan — The Sentinel
+### 2. Plan: The Sentinel
 <p align="center">
   <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/3.jpeg?raw=true" width="30%" alt="Waypoint Hero">
 </p>
@@ -68,11 +68,11 @@ Waypoint's most critical safety infrastructure.
 <p align="center">
   <img src="https://github.com/oasis-parzival/waypoint-nirman/blob/main/Images/7.jpeg?raw=true" width="30%" alt="Waypoint Hero">
 </p>
+
 - **Zero-Latency Dispatch:** Captures high-precision GPS coordinates on trigger and broadcasts a priority signal instantly
 - **Admin Terminal:** Real-time tracking of all signals from `ACTIVE → RESOLVED`
 - **Secure Handling:** Signals are encrypted end-to-end with full geolocation visibility for command personnel
 - **Security Layer:** Admin terminal is protected by a secondary authentication key
-
 
 ### 5. User Dashboard
 Personalized intelligence for the individual explorer.
@@ -102,23 +102,23 @@ The ground intelligence layer.
 
 ---
 
-## 🛠 Technical Architecture
+## // Technical Architecture
 
 Built on a modern **React 18 + Vite** SPA architecture with a fully decoupled backend.
 
-### Frontend
+### // Frontend
 - **Framework:** React 18 + Vite (SPA)
 - **Styling:** Tailwind CSS with a custom Alpine Onyx design system
 - **Animations:** Framer Motion — 3D card transitions, spring physics, perspective-based geometry
 - **Visualization:** Chart.js for operational analytics in the Admin Terminal
 - **Routing:** React Router v6
 
-### Backend & Intelligence
+### // Backend & Intelligence
 - **Platform:** Supabase — Real-time PostgreSQL, Auth, and Object Storage
 - **AI Engine:** Groq Cloud API (`llama-3.1-8b-instant`) for The Sentinel and contextual intelligence
 - **Real-Time:** Supabase Realtime for live SOS signal propagation to the Admin Terminal
 
-### Design Language
+### // Design Language
 The UI implements the **Alpine Onyx** aesthetic:
 - Dark premium interfaces with vibrant mint accent system
 - Glassmorphic card components with dynamic gradient states
@@ -127,7 +127,7 @@ The UI implements the **Alpine Onyx** aesthetic:
 
 ---
 
-## 🌱 Sustainability Architecture
+## // Sustainability Architecture
 
 Sustainability is not a feature. It is a foundational design decision.
 
@@ -138,7 +138,7 @@ Sustainability is not a feature. It is a foundational design decision.
 
 ---
 
-## ⚙️ Local Development
+## // Local Development
 
 1. **Clone the repository:**
    ```bash
@@ -168,7 +168,7 @@ Sustainability is not a feature. It is a foundational design decision.
 
 ---
 
-## 🚀 Deployment
+## // Deployment
 
 Waypoint is deployed on **Netlify** with SPA routing handled via `_redirects` configuration — ensuring all React Router paths resolve correctly on direct URL access.
 
@@ -180,7 +180,7 @@ Push to `main` → Netlify auto-deploys. No manual pipeline required.
 
 ---
 
-## 🛡 Security & Safety Protocol
+## // Security & Safety Protocol
 
 - Admin Terminal is isolated behind a secondary security key — inaccessible without authorization
 - SOS signals are encrypted and handled with absolute integrity from dispatch to resolution
@@ -188,21 +188,8 @@ Push to `main` → Netlify auto-deploys. No manual pipeline required.
 
 ---
 
-## 📸 Screenshots
 
-<p align="center">
-  <img src="YOUR_WEATHER_PAGE_SCREENSHOT_URL_HERE" width="49%" alt="Waypoint Weather Intelligence">
-  <img src="YOUR_DASHBOARD_SCREENSHOT_URL_HERE" width="49%" alt="Waypoint User Dashboard">
-</p>
-
-<p align="center">
-  <img src="YOUR_COMMUNITY_SCREENSHOT_URL_HERE" width="49%" alt="Waypoint Community Feed">
-  <img src="YOUR_EXPERIENCES_SCREENSHOT_URL_HERE" width="49%" alt="Waypoint Field Archives">
-</p>
-
----
-
-## 🗂 Tech Stack Summary
+## // Tech Stack Summary
 
 | Layer | Technology |
 |-------|-----------|
